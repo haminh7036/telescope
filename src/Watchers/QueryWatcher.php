@@ -4,6 +4,7 @@ namespace Laravel\Telescope\Watchers;
 
 use Illuminate\Database\Events\QueryExecuted;
 use Laravel\Telescope\IncomingEntry;
+use Laravel\Telescope\PdoDriver;
 use Laravel\Telescope\Telescope;
 
 class QueryWatcher extends Watcher
@@ -127,7 +128,7 @@ class QueryWatcher extends Watcher
         try {
             $pdo = $event->connection->getPdo();
 
-            if ($pdo instanceof \PDO) {
+            if ($pdo instanceof \PDO && $this->useQuote($pdo)) {
                 return $pdo->quote($binding);
             }
         } catch (\PDOException $e) {
@@ -144,5 +145,21 @@ class QueryWatcher extends Watcher
         ]);
 
         return "'".$binding."'";
+    }
+
+    private function useQuote(\PDO $pdo)
+    {
+        $driver = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        if ($driver == PdoDriver::MYSQL) {
+            $version = preg_replace(
+                '/^(\d+\.\d+).*/',
+                '$1',
+                $pdo->getAttribute(\PDO::ATTR_SERVER_VERSION),
+                -1,
+                $count
+            );
+            return (float) $version > 5.6 && $count;
+        }
+        return true;
     }
 }
