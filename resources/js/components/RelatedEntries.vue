@@ -103,12 +103,6 @@ export default {
         },
 
         queries() {
-            if (this.queryFilter != '') {
-                return _.filter(this.batch, entry => {
-                    return entry.type == 'query' && entry.content.sql.toLowerCase().includes(this.queryFilter.toLowerCase());
-                });
-            }
-
             return _.filter(this.batch, {type: 'query'});
         },
 
@@ -153,6 +147,10 @@ export default {
                 time: _.reduce(this.queries, (time, q) => { return time + parseFloat(q.content.time) }, 0.00).toFixed(2),
                 duplicated: this.queries.length - _.size(_.groupBy(this.queries, (q) => { return `${q.content.hash}-${q.content.connection}` })),
             };
+        },
+
+        queriesFiltered() {
+            return _.filter(this.queries, entry => { return entry.content.sql.toLowerCase().includes(this.queryFilter.toLowerCase()) });
         },
 
         tabs(){
@@ -339,7 +337,7 @@ export default {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="entry in queries">
+                    <tr v-for="entry in queryFilter == '' ? queries : queriesFiltered">
                         <td :title="entry.content.sql">
                             <code>{{ truncate(entry.content.sql, 110) }}</code>
                         </td>
