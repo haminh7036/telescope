@@ -224,7 +224,7 @@ export default {
                     >
                 </div>
             </li>
-            <div v-show="currentTab == 'queries'" class="form-control-with-icon d-flex align-items-center justify-content-between ml-auto mr-3">
+            <div v-if="currentTab == 'queries'" class="form-control-with-icon d-flex align-items-center justify-content-between ml-auto mr-3">
                 <div class="icon-wrapper">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="icon">
                         <path
