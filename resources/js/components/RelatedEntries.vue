@@ -75,6 +75,32 @@ export default {
             if(window.history.replaceState) {
                 window.history.replaceState(null, null, '#' + this.currentTab);
             }
+        },
+
+        /**
+         * Searches for a pattern in a string using a sequential segment approach
+         * @param {string} source - The text to search in
+         * @param {string[]} needles - Array of segments split by '%'
+         * @returns {boolean}
+         */
+        isMatch(source, needles) {
+            let currentIndex = 0;
+
+            for (let i = 0; i < needles.length; i++) {
+                const needle = needles[i];
+                if (needle === "") continue; // Skip empty segments from %%
+
+                // Find the needle starting from the last found position
+                const foundIndex = source.indexOf(needle, currentIndex);
+
+                // If any segment is not found in order, it's not a match
+                if (foundIndex === -1) return false;
+
+                // Move the pointer forward to search for the next segment
+                currentIndex = foundIndex + needle.length;
+            }
+
+            return true;
         }
     },
 
@@ -150,7 +176,18 @@ export default {
         },
 
         queriesFiltered() {
-            return _.filter(this.queries, entry => { return entry.content.sql.toLowerCase().includes(this.queryFilter.toLowerCase()) });
+            // Pre-processing the pattern
+            const needles = this.queryFilter.toLowerCase().split('%');
+            const results = [];
+
+            for (let index = 0; index < this.queries.length; index++) {
+                const element = this.queries[index];
+                if (this.isMatch(element.content.sql.toLowerCase(), needles)) {
+                    results.push(element);
+                }
+            }
+
+            return results;
         },
 
         tabs(){
@@ -237,6 +274,7 @@ export default {
                     class="form-control w-100"
                     placeholder="Search Query"
                     v-model="queryFilter"
+                    title="Filter SQL queries. Use % as a wildcard for flexible matching"
                 />
             </div>
         </ul>
