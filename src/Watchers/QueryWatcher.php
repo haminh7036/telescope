@@ -96,7 +96,7 @@ class QueryWatcher extends Watcher
         foreach ($this->formatBindings($event) as $key => $binding) {
             $regex = is_numeric($key)
                 ? "/\?(?=(?:[^'\\\']*'[^'\\\']*')*[^'\\\']*$)/"
-                : "/:{$key}(?=(?:[^'\\\']*'[^'\\\']*')*[^'\\\']*$)/";
+                : "/:{$key}(?!\w)/";
 
             if ($binding === null) {
                 $binding = 'null';
